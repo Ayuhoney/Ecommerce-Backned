@@ -1,0 +1,15 @@
+{
+  "items": [
+    {
+      "productId": {
+        "title": "Product 1",
+        "images": ["image1.jpg", "image2.jpg"],
+        "price": 10
+      },
+      "quantity": 2
+    }
+  ],
+  "form": {
+    "email": "aman@gmail.com"
+  }
+}
