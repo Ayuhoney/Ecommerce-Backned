@@ -4,34 +4,35 @@ const userSchema = mongoose.Schema({
     name: {
         type: String,
         required: true,
-        trim:true
+        trim: true
     },
     phone: {
         type: String,
-        // required: true,
-        
     },
     email: {
         type: String,
         required: true,
-        trim:true,
-        unique:true
+        trim: true,
+        unique: true
     },
     password: {
         type: String,
         required: true,
-        trim:true,
-
+        trim: true,
     },
-    token:{
-        type:String,
-        default:''
+    role: {
+        type: String,
+        default: 'user', // Default role is user
+        enum: ['user', 'admin'] // Allowable roles
     },
-    tokenExp:{
-        type:Number
+    token: {
+        type: String,
+        default: ''
     },
-    tokens:[{type:Object}]
- 
-})
+    tokenExp: {
+        type: Number
+    },
+    tokens: [{ type: Object }]
+});
 
 module.exports = mongoose.model('User', userSchema);

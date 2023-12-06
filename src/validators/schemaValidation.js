@@ -1,12 +1,13 @@
 const Joi = require('joi')
 
 const authSchema = Joi.object().keys({
-mobile:Joi.string().min(10).max(10).required(), 
-name: Joi.string().min(3).max(32).required(),
-email:Joi.string().email().lowercase().required().regex(/^([A-Za-z0-9._]{3,}@[A-Za-z]{3,}[.]{1}[A-Za-z.]{2,6})+$/),
-password:Joi.string().min(2).required(),
+  mobile: Joi.string().min(10).max(10).required(),
+  name: Joi.string().min(3).max(32).required(),
+  email: Joi.string().email().lowercase().required().regex(/^([A-Za-z0-9._]{3,}@[A-Za-z]{3,}[.]{1}[A-Za-z.]{2,6})+$/),
+  password: Joi.string().min(2).required(),
+  role: Joi.string().valid('user', 'admin').required(), // Add role validation
+});
 
-})
 const productSchema = Joi.object({
   title:Joi.string().required(),
   description:Joi.string().required(),

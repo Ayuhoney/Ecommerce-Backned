@@ -13,10 +13,10 @@ const validObjectId = function (objectId) {
 const createOrder = async (req, res) => {
   try {
     let { userId, items, totalItems, totalPrice } = req.body.order;
-    let { bname, email,password,name, phone, house, city, state, pincode } =
-      req.body.form;
-//if guest checkout
-    if (email.length) {
+    let { bname, email,password,name, phone, house, city, state, pincode } = req.body.form;
+    
+   //if guest checkout
+    if (email && email.length) {
        let user = await userModel.findOne({ email });
        if (user) {
          return res
@@ -58,7 +58,7 @@ const createOrder = async (req, res) => {
           { new: true }
         );
       });
-// console.log(order);
+      // console.log(order);
       return res
         .status(201)
         .send({ status: true, message: "Order placed ", order });

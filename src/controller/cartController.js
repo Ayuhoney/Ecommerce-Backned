@@ -39,7 +39,8 @@ const createCart = async function (req, res) {
       }
     }
     if (!isExist) {
-      arr.push({ productId: productId, quantity: quantity });}
+      
+    arr.push({ productId: productId, quantity: quantity });}
     cart.items = arr;
     let price = product.price;
     cart.totalPrice = userCart.totalPrice + price * quantity;

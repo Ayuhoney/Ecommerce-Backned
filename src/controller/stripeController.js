@@ -8,19 +8,31 @@ const productModel = require("../model/productModel");
 
 
 const payment = async (req, res, next) => {
+  
   try {
+    const allowedCurrencies = ["USD", "EUR", "INR"]; // Add currencies
 
-    let items = req.body.items
+    let items = req.body.items;
+    let currency = req.body.currency || "INR";
+    if (!allowedCurrencies.includes(currency)) {
+      throw new Error("Invalid currency");
+    }
+
+    const exchangeRate = {
+      INR: 1,
+      USD: 0.012, // Example: 1 INR = 0.012 USD
+    };
+
     let session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
-      line_items: req.body.items.map((item) => ({
+      line_items: items.map((item) => ({
         price_data: {
-          currency: "INR",
+          currency: currency,
           product_data: {
             name: item.productId.title,
             images: item.productId.images,
           },
-          unit_amount: item.productId.price * 100,
+          unit_amount: Math.round(item.productId.price * exchangeRate[currency] * 100),
         },
         quantity: item.quantity,
       })),
@@ -33,29 +45,31 @@ const payment = async (req, res, next) => {
       let order = await orderModel.findOne({
         email: req.body.form.email,
         paymentStatus: "payment_pending",
-      })
+      });
 
       if (order) {
         order.paymentId = session.id;
-    
+        order.totalAmount = items.reduce((total, item) => total + item.productId.price * item.quantity * exchangeRate[currency], 0);
         await order.save();
       }
     } else {
-      
       let order = await orderModel.findOne({
         userId: items.userId,
-        paymentStatus :"payment_pending"
+        paymentStatus: "payment_pending",
       });
+
       if (order) {
         order.paymentId = session.id;
+        order.totalAmount = items.reduce((total, item) => total + item.productId.price * item.quantity * exchangeRate[currency], 0);
         await order.save();
       }
     }
+
     res.status(200).json(session);
   } catch (error) {
     next(error);
   }
-}
+};
 
 const paymentStatus = async (req, res) => {
   try {

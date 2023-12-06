@@ -41,8 +41,9 @@ const getPopularProducts = async (req, res) => {
 };
 
 const getAllproducts = async (req, res) => {
+  let id = req.params.id
   try {
-    let products = await productModel.find()
+    let products = await productModel.find(id)
     return res.status(200).send({ status: true, products });
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message });

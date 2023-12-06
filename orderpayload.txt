@@ -1,0 +1,19 @@
+{
+  "order": {
+    "userId": "65709d950419b6e105c24abe",
+    "items": ["item1", "item2"],
+    "totalItems": 2,
+    "totalPrice": 50.00
+  },
+  "form": {
+    "bname": "Business Name",
+    "email": "example@example.com",
+    "password": "securePassword",
+    "phone": "1234567890",
+    "house": "123 Main Street",
+    "city": "Cityville",
+    "state": "Stateville",
+    "pincode": "12345"
+  }
+}
+

@@ -8,7 +8,7 @@ const cors =require('cors')
 
 dotenv.config({path:"../config.env"})
 app.use(express.json());
-app.use(cors({ origin: "*" }));
+app.use(cors({ origin:"*"}));
 app.use('/',route);
 
 mongoose.connect(process.env.DB_URL, {

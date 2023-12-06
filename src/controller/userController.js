@@ -6,43 +6,48 @@ const randomstring = require("randomstring");
 const { sendResetPasswordMail } = require("../validators/sendMail");
 
 
-
-
-
-//register user
+//SignUP
 const signUp = async (req, res) => {
   try {
-    let { email, password, name, mobile } = req.body;
+    const { email, password, name, mobile, role } = req.body;
 
-    if (Object.keys(req.body).length == 0 || Object.keys(req.body).length > 4) {
-      return res.status(400).send({ status: false, message: "invalid request" });
+    // Check for valid request
+    if ( !email || !password || !name || !mobile || !role ||  Object.keys(req.body).length !== 5 ){
+      return res.status(400).send({ status: false, message: "Invalid request" });
     }
+
     const valid = authSchema.validate(req.body);
 
     if (valid.error) {
       return res.status(400).send(valid.error.details[0].message);
     }
-    let checkEmail = await userModel.findOne({ email: email });
-    if (checkEmail)
-      return res
-        .status(409)
-        .send({ status: false, message: "Email already exist" });
 
-    let hash = await bcrypt.hash(req.body.password, 10);
+    // Check if email already exists
+    let checkEmail = await userModel.findOne({ email: email });
+    if (checkEmail) {
+      return res.status(409).send({ status: false, message: "Email already exists" });
+    }
+
+    let hash = await bcrypt.hash(password, 10);
+
     const user = {
       email: email,
       password: hash,
       name,
       mobile,
+      role 
     };
 
-    let savedData = await userModel.create(user);
-    let token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRE,
+    let savedData = await userModel.create({...user,
+      tokens: [{ token: jwt.sign({ email: user.email, role: user.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE }) }]
     });
+
+    // Create and send JWT token
+    let token = savedData.tokens[0].token;
+
     return res.cookie("x-api-key", token).status(201).send({
       status: true,
-      message: " signup seccessfully",
+      message: "Signup successful",
       token: token,
     });
   } catch (err) {
