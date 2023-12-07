@@ -44,7 +44,7 @@ router.put("/order/cancel/:orderId", midd.authentication, orderController.cancel
 router.post("/wishlist", midd.authentication, wishlistController.addToWishlist)
 router.get("/wishlist", midd.authentication, wishlistController.getWishlist);
 router.put("/wishlist", midd.authentication, wishlistController.removeFromWishlist);
-router.post("/wishlist/Buy", midd.authentication,wishlistController.addToCartFromWishlist);
+router.post("/wishlist/buy", midd.authentication,wishlistController.addToCartFromWishlist);
 
 //payment 
 router.post("/payment", stripeController.payment)

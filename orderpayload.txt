@@ -1,19 +1,60 @@
 {
   "order": {
-    "userId": "65709d950419b6e105c24abe",
-    "items": ["item1", "item2"],
+    "userId": "6571ee7f72b3f012b65d6817",
+    "items": [
+      {
+        "productId": "6571eff19723ab7bdafb3216",
+        "quantity": 2,
+        "canceled": false
+      }
+    ],
+    "totalPrice": 50,
     "totalItems": 2,
-    "totalPrice": 50.00
+    "totalQuantity": 3,
+    "status": "completed",
+    "shippingInfo": {
+      "name": "John Doe",
+      "phone": "1234567890",
+      "address": {
+        "house": "123 Street",
+        "city": "Cityville",
+        "state": "Stateville",
+        "pincode": 12345
+      }
+    },
+    "email": "john.doe@example.com",
+    "paymentStatus": "payment_pending",
+    "paymentId": "your_payment_id"
   },
   "form": {
-    "bname": "Business Name",
-    "email": "example@example.com",
-    "password": "securePassword",
+    "name": "John Doe",
     "phone": "1234567890",
-    "house": "123 Main Street",
+    "house": "123 Street",
     "city": "Cityville",
     "state": "Stateville",
-    "pincode": "12345"
+    "pincode": 12345
   }
 }
 
+
+
+{
+  "order": {
+    "userId": "6571ee7f72b3f012b65d6817",
+    "items": [
+      {
+        "productId": "6571eff19723ab7bdafb3216",
+        "quantity": 2,
+        "canceled": false
+      }
+    ]
+  },
+  "form": {
+    "name": "John Doe",
+    "phone": "1234567890",
+    "house": "123 Street",
+    "city": "Cityville",
+    "state": "Stateville",
+    "pincode": 12345
+  }
+}

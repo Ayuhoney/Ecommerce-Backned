@@ -12,18 +12,21 @@ const orderSchema = new mongoose.Schema(
     items: [
       {
         productId: {
-          require: true,
-          type: ObjectId,
+          type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
-        }, //ObjectId, refs to Product model
-        quantity: { type: Number, require: true, default: 1 },
-        _id: false,
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          default: 1,
+        },
         canceled: {
           type: Boolean,
           default: false,
         },
       },
-    ],
+    ],    
     totalPrice: {
       type: Number,
       require: [true, "Holds total price of all the items in the cart"],

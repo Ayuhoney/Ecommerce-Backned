@@ -79,8 +79,6 @@ const searchProduct = async (req, res) => {
   }
 };
 
-
-
 module.exports = {
   createProduct,
   getLimitedProducts,
