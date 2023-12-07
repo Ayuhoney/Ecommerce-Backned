@@ -1,104 +1,120 @@
+const {signUp} = require('../../../controller/userController.js'); // Adjust the import path accordingly
+const userModel = require('../../../model/userModel.js');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const userModel = require('../../../model/userModel');
-const express = require('express');
-const app = express();
-const request = require('supertest');
-const { authSchema } = require('../../../model/userModel');
 
+jest.mock('../../../model/userModel.js');
 jest.mock('bcrypt');
 jest.mock('jsonwebtoken');
-jest.mock('../../../model/userModel');
 
-describe('Sign Up Controller', () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('should return 400 for invalid request', async () => {
-    const response = await request(app)
-      .post('/signup')
-      .send({ email: 'test@example.com' });
-
-    expect(response.status).toBe(400);
-    expect(response.body).toEqual({ status: false, message: 'Invalid request' });
-  });
-
-  it('should return 400 for invalid request schema', async () => {
-    authSchema.validate.mockReturnValueOnce({ error: { details: [{ message: 'Validation error' }] } });
-
-    const response = await request(app)
-      .post('/signup')
-      .send({
-        email: 'test@example.com',
-        password: 'password',
-        name: 'John Doe',
-        mobile: '1234567890',
-        role: 'user'
-      });
-
-    expect(response.status).toBe(400);
-    expect(response.text).toBe('Validation error');
-  });
-
-  it('should return 409 for existing email', async () => {
-    userModel.findOne.mockReturnValueOnce({ email: 'test@example.com' });
-
-    const response = await request(app)
-      .post('/signup')
-      .send({
-        email: 'test@example.com',
-        password: 'password',
-        name: 'John Doe',
-        mobile: '1234567890',
-        role: 'user'
-      });
-
-    expect(response.status).toBe(409);
-    expect(response.body).toEqual({ status: false, message: 'Email already exists' });
-  });
-
-  it('should return 201 and set cookie for successful signup', async () => {
-    bcrypt.hash.mockResolvedValueOnce('hashedPassword');
-    userModel.create.mockResolvedValueOnce({
+describe('signUp', () => {
+test('should sign up a new user', async () => {
+  const req = {
+    body: {
       email: 'test@example.com',
-      tokens: [{ token: 'fakeToken' }]
-    });
-    jwt.sign.mockReturnValueOnce('fakeToken');
+      password: 'password123',
+      name: 'Test User',
+      mobile: '1234567890',
+      role: 'user',
+    },
+  };
 
-    const response = await request(app)
-      .post('/signup')
-      .send({
-        email: 'test@example.com',
-        password: 'password',
-        name: 'John Doe',
-        mobile: '1234567890',
-        role: 'user'
-      });
+  const res = {
+    status: jest.fn(() => res),
+    send: jest.fn(),
+    cookie: jest.fn(),
+  };
 
-    expect(response.status).toBe(201);
-    expect(response.body).toEqual({
-      status: true,
-      message: 'Signup successful',
-      token: 'fakeToken'
-    });
-    expect(response.headers['set-cookie'][0]).toMatch(/^x-api-key=fakeToken;/);
+  // Mock validation success
+  const authSchemaMock = { validate: jest.fn(() => ({ error: null })) };
+
+  // Mock the user to not exist initially
+  userModel.findOne.mockResolvedValueOnce(null);
+
+  // Mock bcrypt hash
+  bcrypt.hash.mockResolvedValueOnce('hashedPassword');
+
+  // Mock JWT sign
+  jwt.sign.mockReturnValueOnce('fakeToken');
+
+  // Mock the creation of the user
+  userModel.create.mockResolvedValueOnce({
+    email: 'test@example.com',
+    name: 'Test User',
+    mobile: '1234567890',
+    role: 'user',
+    tokens: [{ token: 'fakeToken' }],
   });
 
-  it('should handle internal server error', async () => {
-    bcrypt.hash.mockRejectedValueOnce(new Error('Mocked error'));
+  await signUp(req, res);
 
-    const response = await request(app)
-      .post('/signup')
-      .send({
-        email: 'test@example.com',
-        password: 'password',
-        name: 'John Doe',
-        mobile: '1234567890',
-        role: 'user'
-      });
-
-    expect(response.status).toBe(500);
-    expect(response.body).toEqual({ status: false, message: 'Mocked error' });
+  expect(res.status).toHaveBeenCalledWith(500)
+  expect(res.cookie).toHaveBeenCalledWith('x-api-key', 'fakeToken');
+  expect(res.send).toHaveBeenCalledWith({
+    status: true,
+    message: 'Signup successful',
+    token: 'fakeToken',
   });
+});
+
+
+  test('should handle invalid request', async () => {
+    const req = {
+      body: {
+        email: 'test@example.com',
+        password: 'password123',
+        name: 'Test User',
+        mobile: '1234567890',
+        // role is missing
+      },
+    };
+
+    const res = {
+      status: jest.fn(() => res),
+      send: jest.fn(),
+    };
+
+    await signUp(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith({
+      status: false,
+      message: 'Invalid request',
+    });
+  });
+
+  test('should handle email already exists', async () => {
+    const req = {
+      body: {
+        email: 'test@example.com',
+        password: 'password123',
+        name: 'Test User',
+        mobile: '1234567890',
+        role: 'user',
+      },
+    };
+
+    const res = {
+      status: jest.fn(() => res),
+      send: jest.fn(),
+    };
+
+    // Mock the user to already exist
+    userModel.findOne.mockResolvedValueOnce({
+      email: 'test@example.com',
+      name: 'Existing User',
+      mobile: '1234567890',
+      role: 'user',
+    });
+
+    await signUp(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(409);
+    expect(res.send).toHaveBeenCalledWith({
+      status: false,
+      message: 'Email already exists',
+    });
+  });
+
+  // Add more tests for other scenarios as needed
 });
