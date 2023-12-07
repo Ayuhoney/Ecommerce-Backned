@@ -2,6 +2,9 @@ const userModel = require("../model/userModel")
 const productModel = require("../model/productModel")
 const wishlistModel = require("../model/wishlistModel")
 
+const Cart = require("../../src/model/cartModel");
+const Wishlist = require("../../src/model/wishlistModel");
+const Product = require("../../src/model/productModel");
 
 const addToWishlist = async function (req, res) {
     try {
@@ -50,11 +53,6 @@ const getWishlist = async function (req, res) {
   }
 };
 
-
-
-
-
-
 const removeFromWishlist = async (req, res) => {
   try {
     let userId = req.user.userId;
@@ -78,11 +76,68 @@ const removeFromWishlist = async (req, res) => {
 };
 
 
+const addToCartFromWishlist = async function (req, res) {
+  try {
+    let userId = req.user.userId;
 
+    // wishlistId is provided in the request body
+    let { wishlistId } = req.body;
+    if (!wishlistId) {
+      return res.status(400).send({ status: false, message: "Please provide a wishlist Id" });
+    }
 
+    let wishlist = await Wishlist.findById(wishlistId);
+    if (!wishlist) {
+      return res.status(400).send({ status: false, message: "Wishlist not found" });
+    }
 
+    let userCart = await Cart.findOne({ userId: userId });
+    let cart = {};
+    if (!userCart) {
+      cart.userId = userId;
+      cart.items = [];
+      cart.totalItems = 0;
+      cart.totalPrice = 0;
+    } else {
+      cart = {
+        items: userCart.items,
+        totalItems: userCart.totalItems,
+        totalPrice: userCart.totalPrice,
+      };
+    }
 
-module.exports = { addToWishlist, getWishlist, removeFromWishlist };
+    for (const productId of wishlist.products) {
+      let product = await Product.findById(productId);
+      if (product) {
+        let existingItem = cart.items.find(item => item.productId == productId);
+
+        if (existingItem) {
+          existingItem.quantity += 1;
+        } else {
+          cart.items.push({ productId, quantity: 1 });
+        }
+        cart.totalItems += 1;
+        cart.totalPrice += product.price;
+      }
+    }
+
+    // Update or create the cart in the database
+    let update = await Cart.findOneAndUpdate(
+      { userId: userId },
+      cart,
+      { new: true, upsert: true }
+    ).populate("items.productId");
+    
+    //deleted from wishlist
+    await Wishlist.findByIdAndDelete(wishlistId);
+
+    return res.status(201).send({ status: true, message: "Items added from wishlist to cart", cart: update });
+  } catch (err) {
+    return res.status(500).send({ status: false, error: err.message });
+  }
+};
+
+module.exports = { addToWishlist, getWishlist, removeFromWishlist ,addToCartFromWishlist};
 
 
 
