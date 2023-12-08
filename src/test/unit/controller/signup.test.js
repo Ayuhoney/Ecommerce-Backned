@@ -1,4 +1,4 @@
-const {signUp} = require('../../../controller/userController.js'); // Adjust the import path accordingly
+const {signUp} = require('../../../controller/userController.js');
 const userModel = require('../../../model/userModel.js');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -65,7 +65,7 @@ test('should sign up a new user', async () => {
         password: 'password123',
         name: 'Test User',
         mobile: '1234567890',
-        // role is missing
+        role:'user'
       },
     };
 
@@ -115,6 +115,4 @@ test('should sign up a new user', async () => {
       message: 'Email already exists',
     });
   });
-
-  // Add more tests for other scenarios as needed
 });

@@ -3,6 +3,7 @@ const { productSchema } = require("../validators/schemaValidation");
 
 const createProduct = async function (req, res) {
   try {
+   
     let {title,description,price,brand,stock,category } = req.body;
 
     if (Object.keys(req.body).length == 0 || Object.keys(req.body).length > 6) {

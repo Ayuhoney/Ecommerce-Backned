@@ -1,5 +1,5 @@
-const {addToWishlist} = require('../../../controller/wishlistController.js'); // Adjust the import path accordingly
-const productModel = require('../../../model/productModel.js'); // Import your actual model modules
+const {addToWishlist} = require('../../../controller/wishlistController.js'); 
+const productModel = require('../../../model/productModel.js'); 
 const userModel = require('../../../model/userModel.js');
 const wishlistModel = require('../../../model/wishlistModel.js');
 
@@ -83,5 +83,4 @@ describe('addToWishlist', () => {
     });
   });
 
-  // Add more tests for other scenarios as needed
 });

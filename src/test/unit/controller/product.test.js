@@ -1,8 +1,8 @@
-const { createProduct } = require('../../../controller/productController.js'); // Adjust the path accordingly
-const productModel = require('../../../model/productModel.js'); // Adjust the path accordingly
+const { createProduct } = require('../../../controller/productController.js'); 
+const productModel = require('../../../model/productModel.js'); 
 const Joi = require('joi');
 
-jest.mock('../../../model/productModel.js'); // Adjust the path accordingly
+jest.mock('../../../model/productModel.js'); 
 
 describe('createProduct', () => {
   afterEach(() => {
@@ -63,7 +63,6 @@ describe('createProduct', () => {
   it('should return an error for invalid input', async () => {
     const req = {
       body: {
-        // Invalid input intentionally left blank
       },
     };
     const res = {
@@ -71,7 +70,6 @@ describe('createProduct', () => {
       send: jest.fn(),
     };
 
-    // Mocking the validation result to indicate invalid input
     const invalidInput = {
       error: {
         details: [{ message: 'Validation error message' }],
