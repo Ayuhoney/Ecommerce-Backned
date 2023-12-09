@@ -45,11 +45,11 @@ const getWishlist = async function (req, res) {
   try {
     let userId = req.user.userId;
 
-    //checking if the userWishlist exist with this userId or not
     let userWishlist = await wishlistModel.findOne({ userId }).populate("products");
+
     return res.status(200).send({status: true, message: "Success", wishlist: userWishlist });
   } catch (error) {
-    return res.status(500).send({ status: false, error: error.message });
+    return res.status(500).send({ status: false, error:"User wishlist not found" });
   }
 };
 

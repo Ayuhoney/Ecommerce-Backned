@@ -3,15 +3,15 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/controller/orderController.js</title>
+    <title>Code coverage report for controller/orderController.js</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="../../prettify.css" />
-    <link rel="stylesheet" href="../../base.css" />
-    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type='text/css'>
         .coverage-summary .sorter {
-            background-image: url(../../sort-arrow-sprite.png);
+            background-image: url(../sort-arrow-sprite.png);
         }
     </style>
 </head>
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/controller</a> orderController.js</h1>
+        <h1><a href="../index.html">All files</a> / <a href="index.html">controller</a> orderController.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">11.71% </span>
+                <span class="strong">15.62% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>15/128</span>
+                <span class='fraction'>20/128</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">1.92% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/52</span>
+                <span class='fraction'>1/52</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">15.38% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>2/13</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">11.81% </span>
+                <span class="strong">15.74% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>15/127</span>
+                <span class='fraction'>20/127</span>
             </div>
         
             
@@ -446,7 +446,7 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -779,10 +779,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -819,8 +819,8 @@ const bcrypt = require("bcrypt");
 // const { orderSchema } = require("../validators/schemaValidation");
 const userModel = require("../model/userModel");
 const ObjectId = mongoose.Types.ObjectId;
-const validObjectId = <span class="fstat-no" title="function not covered" >fu</span>nction (objectId) {
-<span class="cstat-no" title="statement not covered" >  return mongoose.Types.ObjectId.isValid(objectId);</span>
+const validObjectId = function (objectId) {
+  return mongoose.Types.ObjectId.isValid(objectId);
 };
 &nbsp;
 const createOrder = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
@@ -1152,11 +1152,11 @@ const cancelOrder = <span class="fstat-no" title="function not covered" >as</spa
 };
 &nbsp;
 //track order by guest user only
-const trackOrderById = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
-<span class="cstat-no" title="statement not covered" >  try {</span>
-    let orderId = <span class="cstat-no" title="statement not covered" >req.params.orderId;</span>
-<span class="cstat-no" title="statement not covered" >    if (!validObjectId(orderId)) {</span>
-<span class="cstat-no" title="statement not covered" >      return res</span>
+const trackOrderById = async (req, res) =&gt; {
+  try {
+    let orderId = req.params.orderId;
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (!validObjectId(orderId)) {
+      return res
         .status(400)
         .send({ status: false, message: "Please enter a valid orderId" });
     }
@@ -1171,7 +1171,7 @@ const trackOrderById = <span class="fstat-no" title="function not covered" >as</
     }
 <span class="cstat-no" title="statement not covered" >    return res</span>
       .status(200)
-      .send({ status: true, message: "Order details", order });
+      .send({ status: true, message: "Order details",order });
   } catch (error) {
 <span class="cstat-no" title="statement not covered" >    return res.status(500).send({ error: error.message });</span>
   }
@@ -1192,16 +1192,16 @@ module.exports = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-12-07T20:08:54.918Z
+                at 2023-12-09T20:52:59.014Z
             </div>
-        <script src="../../prettify.js"></script>
+        <script src="../prettify.js"></script>
         <script>
             window.onload = function () {
                 prettyPrint();
             };
         </script>
-        <script src="../../sorter.js"></script>
-        <script src="../../block-navigation.js"></script>
+        <script src="../sorter.js"></script>
+        <script src="../block-navigation.js"></script>
     </body>
 </html>
     

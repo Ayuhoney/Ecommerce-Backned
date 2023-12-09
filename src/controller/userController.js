@@ -82,7 +82,7 @@ const loginUser = async function (req, res) {
     if (!user) {
       return res
         .status(409)
-        .send({ status: false, message: "email or Password are not corerct" });
+        .send({ status: false, message: "email or Password are not correct" });
     }
     let hashPassword = await bcrypt.compare(Password, user.password);
     if (!hashPassword) {
@@ -123,7 +123,7 @@ const loginUser = async function (req, res) {
     UserIdToLocal=user._id
     res
       .status(200)
-      .send({ success: true, user: userInfo, message:" login seccessfully" ,response, token: token });
+      .send({ success: true, user: userInfo, message:" login successfully" ,response, token: token });
   } catch (error) {
     return res.status(500).send({ status: false, error: error.message });
   }
@@ -163,7 +163,7 @@ const forgetPassword = async (req, res) => {
     if (!userData) {
       return res
         .status(404)
-        .send({ success: false, message: " email not found" });
+        .send({ success: false, message: "email not found" });
     }
     if (userData) {
       const randomString = randomstring.generate();

@@ -52,17 +52,6 @@ const getAllproducts = async (req, res) => {
 };
 
 
-const getProductById = async (req, res) => {
-  try {
-    let id = req.params.id;
-    let product = await productModel.findById(id);
-    return res.status(200).send({ status: true, product });
-  } catch (error) {
-    return res.status(500).send({ status: false, message: error.message });
-  }
-};
-
-
 const searchProduct = async (req, res) => {
   try {
     const { searchQuery } = req.query;
@@ -83,7 +72,6 @@ const searchProduct = async (req, res) => {
 module.exports = {
   createProduct,
   getLimitedProducts,
-  getProductById,
   getPopularProducts,
   getAllproducts,
   searchProduct,

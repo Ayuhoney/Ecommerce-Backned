@@ -4,7 +4,7 @@
   "description": "In this App user can signUp , login and add products  into his cart  then place order or  canceled our order.",
   "main": "index.js",
   "scripts": {
-    "test": "jest --watchAll --coverage"
+    "test": "jest --watchAll --coverage --detectOpenHandles"
   },
   "author": "",
   "license": "ISC",

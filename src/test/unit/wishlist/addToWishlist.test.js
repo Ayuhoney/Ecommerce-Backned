@@ -3,9 +3,9 @@ const productModel = require('../../../model/productModel.js');
 const userModel = require('../../../model/userModel.js');
 const wishlistModel = require('../../../model/wishlistModel.js');
 
-jest.mock('../../../model/productModel.js');
-jest.mock('../../../model/userModel.js');
-jest.mock('../../../model/wishlistModel.js');
+jest.mock('../../../model/productModel');
+jest.mock('../../../model/userModel');
+jest.mock('../../../model/wishlistModel');
 
 describe('addToWishlist', () => {
   test('should add product to wishlist', async () => {
