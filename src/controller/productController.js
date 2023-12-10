@@ -22,7 +22,6 @@ const createProduct = async function (req, res) {
   }
 };
 
-
 const getLimitedProducts = async (req, res) => {
   try {
     let products = await productModel.find().limit(30);
@@ -50,7 +49,6 @@ const getAllproducts = async (req, res) => {
     return res.status(500).send({ status: false, message: error.message });
   }
 };
-
 
 const searchProduct = async (req, res) => {
   try {

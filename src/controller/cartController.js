@@ -56,9 +56,6 @@ const createCart = async function (req, res) {
   }
 };
 
-
-
-
 const getCartDetails = async function (req, res) {
   try {
     let userId = req.user.userId;

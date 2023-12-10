@@ -1,0 +1,501 @@
+openapi: 3.0.0
+info:
+  title: E-Commerce API
+  version: 1.0.0
+paths:
+  /signup:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+      responses:
+        '201':
+          description: Signup successful
+          content:
+            application/json:
+              example:
+                status: true
+                message: Signup successful
+
+  /login:
+    post:
+      summary: Log in with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              example:
+                status: true
+                message: Login successful
+                token: <JWT_TOKEN>
+        '400':
+          description: Invalid request or authentication error
+          content:
+            application/json:
+              example:
+                status: false
+                message: Invalid request or authentication error
+
+  /refreshToken:
+    post:
+      summary: Refresh JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshToken'
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              example:
+                status: true
+                message: Token refreshed successfully
+                token: <NEW_JWT_TOKEN>
+        '404':
+          description: Invalid request or refresh token not provided
+          content:
+            application/json:
+              example:
+                status: false
+                message: Invalid request or refresh token not provided
+
+  /forgetPassword:
+    post:
+      summary: Request password reset via email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgetPassword'
+      responses:
+        '200':
+          description: Password reset email sent successfully
+          content:
+            application/json:
+              example:
+                status: true
+                message: Password reset email sent successfully
+        '400':
+          description: Email not found or invalid request
+          content:
+            application/json:
+              example:
+                status: false
+                message: Email not found or invalid request
+
+  /updatePassword/{emailToken}:
+    post:
+      summary: Update user password using email token
+      parameters:
+        - name: emailToken
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePassword'
+      responses:
+        '200':
+          description: User password updated successfully
+          content:
+            application/json:
+              example:
+                status: true
+                message: User password updated successfully
+        '400':
+          description: Invalid token or expired link
+          content:
+            application/json:
+              example:
+                status: false
+                message: Invalid token or expired link
+
+  /logout:
+    post:
+      summary: Log out the user
+      responses:
+        '200':
+          description: Sign out successful
+          content:
+            application/json:
+              example:
+                status: true
+                message: Sign out successful
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example:
+                status: false
+                error: Internal Server Error
+
+
+
+  /createProduct:
+    post:
+      summary: Create a new product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: # ... (product creation schema definition)
+      responses:
+        '201':
+          description: Product created successfully
+          content:
+            application/json:
+              example: # ... (example response for product creation)
+        '400':
+          description: Invalid request or validation error
+          content:
+            application/json:
+              example: # ... (example response for invalid request or validation error)
+
+  /getLimitedProducts:
+    get:
+      summary: Get a limited number of products
+      responses:
+        '200':
+          description: Products retrieved successfully
+          content:
+            application/json:
+              example: # ... (example response for getting limited products)
+
+  /getPopularProducts:
+    get:
+      summary: Get a list of popular products
+      responses:
+        '200':
+          description: Popular products retrieved successfully
+          content:
+            application/json:
+              example: # ... (example response for getting popular products)
+
+  /getAllproducts/{id}:
+    get:
+      summary: Get product by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product retrieved successfully
+          content:
+            application/json:
+              example: # ... (example response for getting a product by ID)
+
+  /searchProduct:
+    get:
+      summary: Search for products
+      parameters:
+        - name: searchQuery
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Products matching the search query
+          content:
+            application/json:
+              example: # ... (example response for product search)
+
+  /createOrder:
+    post:
+      summary: Create a new order
+      tag:
+        -Order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: # ... (request body schema for createOrder)
+      responses:
+        '201':
+          description: Order placed successfully
+          content:
+            application/json:
+              example: # ... (example response for order placement)
+        '400':
+          description: Invalid request or validation error
+          content:
+            application/json:
+              example: # ... (example response for invalid request or validation error)
+        '404':
+          description: User cart not found or products out of stock
+          content:
+            application/json:
+              example: # ... (example response for user cart not found or products out of stock)
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example: # ... (example response for internal server error)
+
+  /getOrder:
+    get:
+      summary: Get all orders for the authenticated user
+      responses:
+        '200':
+          description: Orders retrieved successfully
+          content:
+            application/json:
+              example: # ... (example response for getting all orders)
+        '404':
+          description: No orders found for the user
+          content:
+            application/json:
+              example: # ... (example response for no orders found)
+
+  /getOrderById/{orderId}:
+    get:
+      summary: Get order details by orderId
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Order details retrieved successfully
+          content:
+            application/json:
+              example: # ... (example response for getting order by orderId)
+        '404':
+          description: Order not found or user has not completed any order
+          content:
+            application/json:
+              example: # ... (example response for order not found or user has not completed any order)
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example: # ... (example response for internal server error)
+
+  /cancelProductInOrder/{orderId}:
+    patch:
+      summary: Cancel a product in an order
+      parameters:
+        - name: orderId
+          in: path
+          required:
+
+  /createCart:
+    post:
+      summary: Create a new cart
+      tags:
+        - Cart
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCartRequest'
+      responses:
+        '201':
+          description: Cart created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '400':
+          description: Invalid request or validation error
+          content:
+            application/json:
+              example: { status: false, message: 'Invalid request or validation error' }
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example: { status: false, error: 'Internal Server Error' }
+
+  /getCartDetails:
+    get:
+      summary: Get cart details
+      tags:
+        - Cart
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Cart details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example: { status: false, error: 'Internal Server Error' }
+
+  /updateCart:
+    put:
+      summary: Update cart
+      tags:
+        - Cart
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCartRequest'
+      responses:
+        '200':
+          description: Cart updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '400':
+          description: Invalid request or validation error
+          content:
+            application/json:
+              example: { status: false, message: 'Invalid request or validation error' }
+        '404':
+          description: Product not found in cart
+          content:
+            application/json:
+              example: { status: false, message: 'Product not found in cart' }
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example: { status: false, error: 'Internal Server Error' }
+
+  /addToWishlist:
+    post:
+      summary: Add a product to the wishlist
+      tags:
+        - Wishlist
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddToWishlistRequest'
+      responses:
+        '201':
+          description: Product added to wishlist successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WishlistResponse'
+        '400':
+          description: Invalid request or product not found
+          content:
+            application/json:
+              example: { status: false, message: 'Invalid request or product not found' }
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example: { status: false, error: 'Internal Server Error' }
+
+  /getWishlist:
+    get:
+      summary: Get user's wishlist
+      tags:
+        - Wishlist
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Wishlist retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WishlistResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example: { status: false, error: 'Internal Server Error' }
+
+  /removeFromWishlist:
+    delete:
+      summary: Remove a product from the wishlist
+      tags:
+        - Wishlist
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemoveFromWishlistRequest'
+      responses:
+        '200':
+          description: Product removed from wishlist successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WishlistResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example: { status: false, error: 'Internal Server Error' }
+
+  /addToCartFromWishlist:
+    post:
+      summary: Add products from the wishlist to the cart
+      tags:
+        - Wishlist
+        - Cart
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddToCartFromWishlistRequest'
+      responses:
+        '201':
+          description: Items added from wishlist to cart successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '400':
+          description: Invalid request or wishlist not found
+          content:
+            application/json:
+              example: { status: false, message: 'Invalid request or wishlist not found' }
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              example: { status: false, error: 'Internal Server Error' }
+

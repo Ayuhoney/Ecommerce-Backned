@@ -56,8 +56,6 @@ const signUp = async (req, res) => {
 };
 
 
-
-///login user
 let UserIdToLocal
 const getUserId = ( ) => {
   return UserIdToLocal
