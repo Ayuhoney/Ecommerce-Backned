@@ -28,7 +28,6 @@ describe('getAllproducts controller', () => {
     ];
     require('../../../model/productModel').find.mockResolvedValueOnce(mockProducts);
 
-    // Call the controller function
     await getAllproducts(req, res);
 
     // Check if the response is as expected
