@@ -69,10 +69,66 @@ const searchProduct = async (req, res) => {
   }
 };
 
+const validSortFields = ["title", "price", "createdAt"];
+const validOrderOptions = ["asc", "desc"];
+
+const parseQueryParams = (query) => {
+    let { page = 1, limit = 5, search = "", sort = "price", order = "asc", category = "All" } = query;
+
+    page = parseInt(page) - 1;
+    limit = parseInt(limit);
+
+    sort = validSortFields.includes(sort) ? sort : "price";
+    order = validOrderOptions.includes(order) ? order : "asc";
+
+    let categoryFilter = {};
+    if (category !== "All") {
+        const categories = category.split(",");
+        categoryFilter = { category: { $in: categories } };
+    }
+
+    return { page, limit, search, sort, order, categoryFilter };
+};
+
+const buildSearchQuery = (search) => {
+    if (search) {
+        return { title: { $regex: search, $options: "i" } };
+    }
+    return {};
+};
+
+const pagination = async (req, res) => {
+    try {
+        const { page, limit, search, sort, order, categoryFilter } = parseQueryParams(req.query);
+        const regexSearch = buildSearchQuery(search);
+
+        const products = await Product.find({ ...regexSearch, ...categoryFilter })
+            .sort({ [sort]: order })
+            .skip(page * limit)
+            .limit(limit);
+
+        const total = await products.countDocuments({ ...regexSearch, ...categoryFilter });
+
+        const response = {
+            error: false,
+            total,
+            page: page + 1,
+            limit,
+            categories: categoriesOptions,
+            products,
+        };
+
+        res.status(200).json(response);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: true, message: "Internal Server Error" });
+    }
+};
 module.exports = {
   createProduct,
   getLimitedProducts,
   getPopularProducts,
   getAllproducts,
   searchProduct,
+  pagination
 };

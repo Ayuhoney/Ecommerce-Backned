@@ -23,6 +23,7 @@ router.get("/popular-products", productCotroller.getPopularProducts);
 router.get("/products", productCotroller.getAllproducts);
 router.get("/getProductById/:id", productCotroller.getProductById);
 router.get("/products/search", productCotroller.searchProduct)
+router.get("/products/pagination",productCotroller.pagination);  //pagination
 
 //cart route
 router.post("/cart", midd.authentication, cartController.createCart);
@@ -44,7 +45,7 @@ router.put("/order/cancel/:orderId", midd.authentication, orderController.cancel
 router.post("/wishlist", midd.authentication, wishlistController.addToWishlist)
 router.get("/wishlist", midd.authentication, wishlistController.getWishlist);
 router.put("/wishlist", midd.authentication, wishlistController.removeFromWishlist);
-router.post("/wishlist/buy", midd.authentication,wishlistController.addToCartFromWishlist);
+router.post("/wishlist/:buy", midd.authentication,wishlistController.addToCartFromWishlist);
 
 //payment 
 router.post("/payment", stripeController.payment)
