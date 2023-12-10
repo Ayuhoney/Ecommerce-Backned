@@ -1,7 +1,7 @@
 const { forgetPassword } = require('../../../controller/userController.js');
 const userModel = require('../../../model/userModel');
 const randomstring = require('randomstring');
-const { sendResetPasswordMail } = require('../../../validators/sendMail.js'); // Assuming you have a mail service
+const { sendResetPasswordMail } = require('../../../validators/sendMail.js'); 
 
 jest.mock('../../../model/userModel');
 jest.mock('randomstring');

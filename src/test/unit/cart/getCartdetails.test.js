@@ -1,6 +1,5 @@
-const { getCartDetails } = require('../../../controller/cartController.js'); // Replace with your actual file path
-const cartModel = require('../../../model/cartModel'); // Replace with your actual cart model path
-
+const { getCartDetails } = require('../../../controller/cartController.js'); 
+const cartModel = require('../../../model/cartModel'); 
 jest.mock('../../../model/cartModel');
 
 describe('getCartDetails', () => {

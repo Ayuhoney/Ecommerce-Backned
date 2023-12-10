@@ -1,7 +1,6 @@
-const { createCart } = require('../../../controller/cartController.js'); // Replace with your actual file path
-const cartModel = require('../../../model/cartModel.js'); // Replace with your actual cart model path
-const productModel = require('../../../model/productModel.js'); // Replace with your actual product model path
-const { isValidId, isValidBody } = require('../../../validators/validator.js'); // Replace with your actual file path
+const { createCart } = require('../../../controller/cartController.js'); 
+const productModel = require('../../../model/productModel.js');
+const { isValidId, isValidBody } = require('../../../validators/validator.js'); 
 
 jest.mock('../../../model/cartModel.js');
 jest.mock('../../../model/productModel.js');

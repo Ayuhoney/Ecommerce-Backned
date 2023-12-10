@@ -1,7 +1,7 @@
-const userModel = require('../../../model/userModel'); // Import your userModel module
-const { logout } = require('../../../controller/userController.js'); // Import your logout module
+const userModel = require('../../../model/userModel');
+const { logout } = require('../../../controller/userController.js'); 
 
-jest.mock('../../../model/userModel'); // Mock the user model
+jest.mock('../../../model/userModel'); 
 
 describe('logout function', () => {
   const mockUser = {

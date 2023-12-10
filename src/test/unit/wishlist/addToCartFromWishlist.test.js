@@ -1,6 +1,5 @@
-const { addToCartFromWishlist } = require('../../../controller/wishlistController.js'); // Replace with the actual file name
+const { addToCartFromWishlist } = require('../../../controller/wishlistController.js'); 
 
-// Mocking the necessary modules and functions
 jest.mock('../../../model/wishlistModel', () => ({
   findById: jest.fn(),
   findByIdAndDelete: jest.fn(),

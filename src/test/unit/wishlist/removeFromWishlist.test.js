@@ -1,6 +1,5 @@
-const { removeFromWishlist } = require('../../../controller/wishlistController.js'); // Replace with the actual file name
+const { removeFromWishlist } = require('../../../controller/wishlistController.js'); 
 
-// Mocking the necessary modules and functions
 jest.mock('../../../model/wishlistModel', () => ({
   findOne: jest.fn(),
   findByIdAndUpdate: jest.fn(),

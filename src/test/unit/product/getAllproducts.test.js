@@ -1,4 +1,4 @@
-const { getAllproducts } = require('../../../controller/productController.js'); // Replace with the actual file name
+const { getAllproducts } = require('../../../controller/productController.js'); 
 
 // Mocking the necessary modules and functions
 jest.mock('../../../model/productModel', () => ({
