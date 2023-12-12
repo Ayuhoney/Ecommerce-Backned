@@ -21,7 +21,6 @@ router.post("/product", productCotroller.createProduct);
 router.get("/limited-products", productCotroller.getLimitedProducts);
 router.get("/popular-products", productCotroller.getPopularProducts);
 router.get("/products", productCotroller.getAllproducts);
-router.get("/getProductById/:id", productCotroller.getProductById);
 router.get("/products/search", productCotroller.searchProduct)
 router.get("/products/pagination",productCotroller.pagination);  //pagination
 
