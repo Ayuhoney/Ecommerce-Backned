@@ -31,14 +31,12 @@ describe('createProduct controller', () => {
   });
 
   it('should create a product successfully', async () => {
-    // Mock the product creation
+
     const createdProduct = { _id: 'sampleId', ...req.body };
     require('../../../model/productModel.js').create.mockResolvedValueOnce(createdProduct);
 
-    // Call the controller function
     await createProduct(req, res);
 
-    // Check if the response is as expected
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.send).toHaveBeenCalledWith({
       status: true,
@@ -48,12 +46,10 @@ describe('createProduct controller', () => {
   });
 
   it('should handle invalid request', async () => {
-    req.body = {}; // Empty request body
+    req.body = {};
 
-    // Call the controller function
     await createProduct(req, res);
 
-    // Check if the response is as expected
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.send).toHaveBeenCalledWith({
       status: false,
@@ -69,26 +65,36 @@ describe('createProduct controller', () => {
     };
     require('../../../validators/schemaValidation.js').productSchema.validate.mockReturnValueOnce(validationError);
 
-    // Call the controller function
     await createProduct(req, res);
 
-    // Check if the response is as expected
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.send).toHaveBeenCalledWith('Validation error message');
   });
 
   it('should handle internal server error', async () => {
-    // Mock an internal server error
+
     require('../../../model/productModel.js').create.mockRejectedValueOnce(new Error('Internal server error'));
 
     // Call the controller function
     await createProduct(req, res);
 
-    // Check if the response is as expected
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({
       status: false,
       message: 'Internal server error',
+    });
+  });
+
+  it('should handle unexpected error during product creation', async () => {
+    const unexpectedError = new Error('Unexpected error during product creation');
+    require('../../../model/productModel.js').create.mockRejectedValueOnce(unexpectedError);
+
+    await createProduct(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith({
+      status: false,
+      message: 'Unexpected error during product creation',
     });
   });
 });
