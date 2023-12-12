@@ -60,5 +60,4 @@ describe('payment function', () => {
 
     expect(next).toHaveBeenCalledWith(expect.any(Error));
   });
-
 });

@@ -3,7 +3,6 @@ const cartModel = require("../model/cartModel");
 const orderModel = require("../model/orderModel");
 const productModel = require("../model/productModel");
 const bcrypt = require("bcrypt");
-// const { orderSchema } = require("../validators/schemaValidation");
 const userModel = require("../model/userModel");
 const ObjectId = mongoose.Types.ObjectId;
 const validObjectId = function (objectId) {
@@ -12,124 +11,111 @@ const validObjectId = function (objectId) {
 
 const createOrder = async (req, res) => {
   try {
-    let { userId, items, totalItems, totalPrice } = req.body.order;
-    let { bname, email,password,name, phone, house, city, state, pincode } = req.body.form;
-    
-   //if guest checkout
+    const { userId, items, totalItems, totalPrice } = req.body.order;
+    const { bname, email, password, name, phone, house, city, state, pincode } = req.body.form;
+
+    let guestCheckout = false;
+
     if (email && email.length) {
-       let user = await userModel.findOne({ email });
-       if (user) {
-         return res
-           .status(400)
-           .send({ status: false, message: "You have an account,Please login " });
-       }
+      guestCheckout = true;
+    }
+
+    if (guestCheckout) {
+      let user = await userModel.findOne({ email });
+
+      if (user) {
+        return res.status(400).send({ status: false, message: "You have an account,Please login " });
+      }
+
       const orderDetails = {
         name: bname,
         email,
         password,
         items,
-        totalItems: totalItems,
-        totalPrice: totalPrice,
+        totalItems,
+        totalPrice,
         products: items,
-
         shippingInfo: {
-          name ,
-          phone ,
+          name,
+          phone,
           address: {
-            house: house,
-            city: city,
-            state: state,
-            pincode: pincode,
+            house,
+            city,
+            state,
+            pincode,
           },
         },
       };
 
       let hash = await bcrypt.hash(password, 10);
 
-      let newUser = await userModel.create({name:bname , email:email, password:hash})
-      orderDetails.userId = newUser._id
-
+      let newUser = await userModel.create({ name: bname, email, password: hash });
+      orderDetails.userId = newUser._id;
 
       let order = await orderModel.create(orderDetails);
-      items.forEach(async (item) => {
-        await productModel.findByIdAndUpdate(
-          item.productId._id,
-          { $inc: { stock: -item.quantity } },
-          { new: true }
-        );
-      });
-      // console.log(order);
-      return res
-        .status(201)
-        .send({ status: true, message: "Order placed ", order });
+
+      await updateProductStocks(items);
+
+      return res.status(201).send({ status: true, message: "Order placed", order });
     } else {
-      let cartDetail = await cartModel
-        .findOne({ userId: userId })
-        .populate("items.productId", "stock");
+      let cartDetail = await cartModel.findOne({ userId }).populate("items.productId", "stock");
 
       if (!cartDetail) {
-        return res
-          .status(404)
-          .send({ status: false, message: "User cart not found" });
+        return res.status(404).send({ status: false, message: "User cart not found" });
       }
+
       if (items.length <= 0) {
-        return res.status(400).send({
-          status: false,
-          message: "Please add some items in cart to place order",
-        });
+        return res.status(400).send({ status: false, message: "Please add some items in cart to place an order" });
       }
 
       const filter = items.filter((x) => x.quantity > x.productId.stock);
       if (filter.length > 0) {
-        return res.status(400).send({
-          status: false,
-          message: "some product are out of stock",
-          filter,
-          items,
-        });
+        return res.status(400).send({ status: false, message: "Some products are out of stock", filter, items });
       }
 
       let order = {
         userId,
-        items: items,
-        totalItems: totalItems,
-        totalPrice: totalPrice,
+        items,
+        totalItems,
+        totalPrice,
         products: items,
         shippingInfo: {
-          name: name,
-          phone: phone,
+          name,
+          phone,
           address: {
-            house: house,
-            city: city,
-            state: state,
-            pincode: pincode,
+            house,
+            city,
+            state,
+            pincode,
           },
         },
       };
-      // create order and update product stocks
-      let createdata = await orderModel.create(order);
-      items.forEach(async (item) => {
-        await productModel.findByIdAndUpdate(
-          item.productId._id,
-          { $inc: { stock: -item.quantity } },
-          { new: true }
-        );
-      });
-      //cart empty after order  successfully placed  
+
+      // Create order and update product stocks
+      let createdData = await orderModel.create(order);
+      await updateProductStocks(items);
+
+      // Empty the cart after the order is successfully placed
       await cartModel.findByIdAndUpdate(
         cartDetail._id,
         { $set: { items: [], totalItems: 0, totalPrice: 0 } },
         { new: true }
       );
 
-      return res.status(200).send({
-        status: true,
-        message: "order placed successfully",
-        data: createdata,
-      });
+      return res.status(200).send({ status: true, message: "Order placed successfully", data: createdData });
     }
   } catch (error) {
     return res.status(500).send({ error: error.message });
+  }
+};
+
+const updateProductStocks = async (items) => {
+  for (const item of items) {
+    await productModel.findByIdAndUpdate(
+      item.productId._id,
+      { $inc: { stock: -item.quantity } },
+      { new: true }
+    );
   }
 };
 
@@ -176,119 +162,80 @@ const getOrderById = async (req, res) => {
   }
 };
 
-// cancel product in order
-const cancelProductInOrder = async (req, res) => {
+const cancelProductInOrder = async (req, res, orderModel, productModel, responseBuilder) => {
   try {
-    let { productId } = req.body;
-    let orderId = req.params.orderId;
-    let userId = req.user.userId;
-    if (!orderId) {
-      return res
-        .status(400)
-        .send({ status: false, message: "Please provide orderId" });
-    }
-    if (!ObjectId.isValid(orderId)) {
-      return res.status(400).send({ status: false, message: "invlid orderId" });
-    }
-    if (!productId) {
-      return res
-        .status(400)
-        .send({ status: false, message: "Please provide productId" });
-    }
-    if (!ObjectId.isValid(productId)) {
-      return res.status(400).send({ status: false, message: "invlid productId" });
-    }
-    let userOrder = await orderModel.findById(orderId);
-    if (!userOrder) {
-      return res
-        .status(404)
-        .send({ status: false, message: "order not found with this id" });
+    const { productId } = req.body;
+    const orderId = req.params.orderId;
+    const userId = req.user.userId;
+
+    if (!orderId || !ObjectId.isValid(orderId)) {
+      return responseBuilder.error(400, "Invalid orderId or productId");
     }
 
-    if (userId.valueOf() != userOrder.userId.valueOf()) {
-      return res.status(403).send({
-        status: false,
-        message: "Forbidden you have not access to update this",
-      });
+    const userOrder = await orderModel.findById(orderId);
+
+    if (!userOrder) {
+      return responseBuilder.error(404, "Order not found with this id");
     }
+
+    if (userId.valueOf() !== userOrder.userId.valueOf()) {
+      return responseBuilder.error(403, "Forbidden, you do not have access to update this order");
+    }
+
     if (userOrder.status !== "completed") {
-      return res
-        .status(400)
-        .send({ status: false, message: "Order cannot be updated" });
+      return responseBuilder.error(400, "Order cannot be updated");
     }
-    let product = await productModel
-      .findById(productId)
-     
+
+    const product = await productModel.findById(productId);
+
     if (!product) {
-      return res
-        .status(404)
-        .send({ status: false, message: "productId invalid" });
+      return responseBuilder.error(404, "Invalid productId");
     }
+
     if (userOrder.items.length === 0) {
-      return res
-        .status(400)
-        .send({ status: false, message: "your order is already empty" });
+      return responseBuilder.error(400, "Your order is already empty");
     }
-    // get quantity of removed product
+
     let quantity = 0;
-    userOrder.items.map((x) => {
+    userOrder.items.forEach((x) => {
       if (x.productId.valueOf() === productId) {
         quantity = x.quantity;
-      }
-    });
-    // filtering the product that user want to delete or remove
-    userOrder.items.map((x) => {
-      if (x.productId.toString() == productId) {
         x.canceled = true;
       }
     });
-    // console.log("productId ==>",userOrder.items)
 
     product.stock += quantity;
     await product.save();
-    let updatedData = {};
-    updatedData.items = userOrder.items,
-      updatedData.totalItems = userOrder.totalItems - quantity,
-      updatedData.totalPrice =
-        userOrder.totalPrice - product.price * quantity;
-// console.log(updatedData);
+
+    const updatedData = {
+      items: userOrder.items,
+      totalItems: userOrder.totalItems - quantity,
+      totalPrice: userOrder.totalPrice - product.price * quantity
+    };
+
+    const updateFields = {
+      items: updatedData.items,
+      totalItems: updatedData.totalItems,
+      totalPrice: updatedData.totalPrice
+    };
+
     if (updatedData.totalPrice === 0) {
-    let order = await orderModel
-      .findByIdAndUpdate(
-        orderId,
-        {
-          $set: {
-            items: updatedData.items,
-            totalItems: updatedData.totalItems,
-            totalPrice: updatedData.totalPrice,
-            status:"canceled"
-          },
-        },
-        { new: true }
-      )
-      .populate("items.productId");
-      return res
-        .status(200)
-        .send({ status: true, message: "order updated", order });
-    } else {
-      // console.log(updatedData);
-      let order = await orderModel
-        .findByIdAndUpdate(
-          orderId,
-          { $set: {items:updatedData.items,totalItems:updatedData.totalItems,totalPrice:updatedData.totalPrice} },
-          { new: true }
-        )
-        .populate("items.productId");
-      return res
-        .status(200)
-        .send({ status: true, message: "order updated", order });
+      updateFields.status = "canceled";
     }
+
+    const updatedOrder = await orderModel.findByIdAndUpdate(
+      orderId,
+      { $set: updateFields },
+      { new: true }
+    ).populate("items.productId");
+
+    return responseBuilder.success(200, "Order updated", updatedOrder);
   } catch (error) {
-    return res.status(500).send({ error: error.message });
+    return responseBuilder.error(500, error.message);
   }
 };
 
-//  cancel user order with orderId in params and userId from auth
+
 
 const cancelOrder = async (req, res) => {
   try {

@@ -1,9 +1,7 @@
-const bcrypt = require('bcrypt');
+
 const { createOrder } = require('../../../controller/orderController.js'); 
 const userModel = require('../../../model/userModel.js'); 
-const cartModel = require('../../../model/cartModel.js'); 
 const orderModel = require('../../../model/orderModel.js');
-const productModel = require('../../../model/productModel.js'); 
 
 jest.mock('../../../model/userModel.js');
 jest.mock('../../../model/cartModel.js');

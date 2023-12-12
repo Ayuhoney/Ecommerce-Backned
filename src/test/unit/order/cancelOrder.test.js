@@ -3,7 +3,6 @@ const { cancelOrder } = require('../../../controller/orderController.js');
 jest.mock('../../../model/orderModel');
 jest.mock('../../../model/productModel');
 
-// Import the mocked modules
 const orderModel = require('../../../model/orderModel');
 const productModel = require('../../../model/productModel');
 
