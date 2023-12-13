@@ -5,9 +5,12 @@ const productModel = require("../model/productModel");
 const bcrypt = require("bcrypt");
 const userModel = require("../model/userModel");
 const ObjectId = mongoose.Types.ObjectId;
+const isValidObjectId = (id) => Types.ObjectId.isValid(id);
+const { Types } = require('mongoose');
 const validObjectId = function (objectId) {
   return mongoose.Types.ObjectId.isValid(objectId);
 };
+
 
 const createOrder = async (req, res) => {
   try {
@@ -119,7 +122,6 @@ const updateProductStocks = async (items) => {
   }
 };
 
-///get all orders
 const getOrder = async function (req, res) {
   try {
     let userId = req.user.userId;
@@ -140,7 +142,6 @@ const getOrder = async function (req, res) {
     return res.status(500).send({ status: false, error: err.message });
   }
 };
-///get order by orderId
 const getOrderById = async (req, res) => {
   try {
     // let userId = req.user.userId;
@@ -162,23 +163,101 @@ const getOrderById = async (req, res) => {
   }
 };
 
+const cancelOrder = async (req, res) => {
+  try {
+    let orderId = req.params.orderId;
+    let userId = req.user.userId;
+    if (!orderId) {
+      return res
+        .status(400)
+        .send({ status: false, message: "Please provide orderId" });
+    }
+    if (!ObjectId.isValid(orderId)) {
+      return res.status(400).send({ status: false, message: "invlid orderId" });
+    }
+    let userOrder = await orderModel
+      .findById(orderId)
+      .populate("items.productId");
+
+    if (userId.valueOf() != userOrder.userId.valueOf()) {
+      return res.status(403).send({
+        status: false,
+        message: "Forbidden you have not access to update this",
+      });
+    }
+    if (userOrder.status !== "completed") {
+      return res
+        .status(400)
+        .send({ status: false, message: "Order cannot be cancel" });
+    }
+    userOrder.items.forEach(async (product) => {
+      await productModel.findByIdAndUpdate(
+        product.productId,
+        { $inc: { stock: +product.quantity } },
+        { new: true }
+      );
+    });
+    const order = await orderModel.findByIdAndUpdate(
+      orderId,
+      { $set: { status: "canceled", canceledOn: new Date().toLocaleString() } },
+      { new: true },
+      // { new: true }
+    ).populate("items.productId");
+    return res
+      .status(200)
+      .send({ status: true, message: "order cancled", order })
+  } catch (error) {
+    return res.status(500).send({ error: error.message });
+  }
+};
+const trackOrderById = async (req, res) => {
+  try {
+    let orderId = req.params.orderId;
+    if (!validObjectId(orderId)) {
+      return res
+        .status(400)
+        .send({ status: false, message: "Please enter a valid orderId" });
+    }
+    let order = await orderModel
+      .findOne({ _id: orderId })
+      .populate("items.productId");
+    //  if order not found with orderId or order doesn't have email in it.
+    if (!order) {
+      return res
+        .status(400)
+        .send({ status: false, message: "You have not completed any order" });
+    }
+    return res
+      .status(200)
+      .send({ status: true, message: "Order details",order });
+  } catch (error) {
+    return res.status(500).send({ error: error.message });
+  }
+};
+
+const getOrderByIds = async (orderId, orderModel) => {
+  return orderModel.findById(orderId);
+};
+const isUserAuthorized = (userId, userOrder) => {
+  return userId.valueOf() === userOrder.userId.valueOf();
+};
 const cancelProductInOrder = async (req, res, orderModel, productModel, responseBuilder) => {
   try {
     const { productId } = req.body;
     const orderId = req.params.orderId;
     const userId = req.user.userId;
 
-    if (!orderId || !ObjectId.isValid(orderId)) {
+    if (!orderId || !isValidObjectId(orderId)) {
       return responseBuilder.error(400, "Invalid orderId or productId");
     }
 
-    const userOrder = await orderModel.findById(orderId);
+    const userOrder = await getOrderByIds(orderId, orderModel);
 
     if (!userOrder) {
       return responseBuilder.error(404, "Order not found with this id");
     }
 
-    if (userId.valueOf() !== userOrder.userId.valueOf()) {
+    if (!isUserAuthorized(userId, userOrder)) {
       return responseBuilder.error(403, "Forbidden, you do not have access to update this order");
     }
 
@@ -229,87 +308,13 @@ const cancelProductInOrder = async (req, res, orderModel, productModel, response
       { new: true }
     ).populate("items.productId");
 
-    return responseBuilder.success(200, "Order updated", updatedOrder);
+    return responseBuilder.responseBuilder(200, "Order updated", updatedOrder);
   } catch (error) {
-    return responseBuilder.error(500, error.message);
+    return responseBuilder.responseBuilder(500, "fail order");
   }
 };
 
 
-
-const cancelOrder = async (req, res) => {
-  try {
-    let orderId = req.params.orderId;
-    let userId = req.user.userId;
-    if (!orderId) {
-      return res
-        .status(400)
-        .send({ status: false, message: "Please provide orderId" });
-    }
-    if (!ObjectId.isValid(orderId)) {
-      return res.status(400).send({ status: false, message: "invlid orderId" });
-    }
-    let userOrder = await orderModel
-      .findById(orderId)
-      .populate("items.productId");
-
-    if (userId.valueOf() != userOrder.userId.valueOf()) {
-      return res.status(403).send({
-        status: false,
-        message: "Forbidden you have not access to update this",
-      });
-    }
-    if (userOrder.status !== "completed") {
-      return res
-        .status(400)
-        .send({ status: false, message: "Order cannot be cancel" });
-    }
-    userOrder.items.forEach(async (product) => {
-      await productModel.findByIdAndUpdate(
-        product.productId,
-        { $inc: { stock: +product.quantity } },
-        { new: true }
-      );
-    });
-    const order = await orderModel.findByIdAndUpdate(
-      orderId,
-      { $set: { status: "canceled", canceledOn: new Date().toLocaleString() } },
-      { new: true },
-      // { new: true }
-    ).populate("items.productId");
-    return res
-      .status(200)
-      .send({ status: true, message: "order cancled", order })
-  } catch (error) {
-    return res.status(500).send({ error: error.message });
-  }
-};
-
-//track order by guest user only
-const trackOrderById = async (req, res) => {
-  try {
-    let orderId = req.params.orderId;
-    if (!validObjectId(orderId)) {
-      return res
-        .status(400)
-        .send({ status: false, message: "Please enter a valid orderId" });
-    }
-    let order = await orderModel
-      .findOne({ _id: orderId })
-      .populate("items.productId");
-    //  if order not found with orderId or order doesn't have email in it.
-    if (!order) {
-      return res
-        .status(400)
-        .send({ status: false, message: "You have not completed any order" });
-    }
-    return res
-      .status(200)
-      .send({ status: true, message: "Order details",order });
-  } catch (error) {
-    return res.status(500).send({ error: error.message });
-  }
-};
 
 module.exports = {
   createOrder,
@@ -318,4 +323,7 @@ module.exports = {
   cancelProductInOrder,
   getOrderById,
   trackOrderById,
+  isValidObjectId,
+  getOrderByIds,
+  isUserAuthorized,
 };

@@ -1,76 +1,82 @@
-
 const stripe = require("stripe")("sk_test_51OI6mCSHtZOZPQIvYEuqWfugOH7y5petyTLUtZE4WZIf7ZG9B2L3H6pkwoW8YBqfyT0ZUKtHE0m0fZo69FAgzXBk00bGJGyaAT");
-const mailTrackId = require("../validators/sendOrderSummaryMail")
+const mailTrackId = require("../validators/sendOrderSummaryMail");
 const orderModel = require("../model/orderModel");
 const productModel = require("../model/productModel");
 
+const allowedCurrencies = ["USD", "EUR", "INR"];
 
+const getExchangeRate = (currency) => {
+  const exchangeRate = {
+    INR: 1,
+    USD: 0.012,
+    // Add other currencies and exchange rates as needed
+  };
 
+  return exchangeRate[currency] || 1;
+};
+const createStripeSession = async (items, currency) => {
+  return stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    line_items: items.map((item) => ({
+      price_data: {
+        currency: currency,
+        product_data: {
+          name: item.productId.title,
+          images: item.productId.images,
+        },
+        unit_amount: Math.round(item.productId.price * getExchangeRate(currency) * 100),
+      },
+      quantity: item.quantity,
+    })),
+    mode: "payment",
+    success_url: `${process.env.HOST_URL}/success`,
+    cancel_url: `${process.env.HOST_URL}/failed`,
+  });
+};
+const updateOrderPaymentInfo = async (order, session, items, currency) => {
+  order.paymentId = session.id;
+  order.totalAmount = items.reduce(
+    (total, item) => total + item.productId.price * item.quantity * getExchangeRate(currency),
+    0
+  );
+  await order.save();
+};
 
 const payment = async (req, res, next) => {
-  
   try {
-    const allowedCurrencies = ["USD", "EUR", "INR"]; // Add currencies
+    const { items, form } = req.body;
+    const currency = req.body.currency || "INR";
 
-    let items = req.body.items;
-    let currency = req.body.currency || "INR";
     if (!allowedCurrencies.includes(currency)) {
       throw new Error("Invalid currency");
     }
 
-    const exchangeRate = {
-      INR: 1,
-      USD: 0.012, // Example: 1 INR = 0.012 USD
-    };
+    const exchangeRate = getExchangeRate(currency);
 
-    let session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: items.map((item) => ({
-        price_data: {
-          currency: currency,
-          product_data: {
-            name: item.productId.title,
-            images: item.productId.images,
-          },
-          unit_amount: Math.round(item.productId.price * exchangeRate[currency] * 100),
-        },
-        quantity: item.quantity,
-      })),
-      mode: "payment",
-      success_url: `${process.env.HOST_URL}/success`,
-      cancel_url: `${process.env.HOST_URL}/failed`,
-    });
+    let order;
 
-    if (req.body.form.email) {
-      let order = await orderModel.findOne({
-        email: req.body.form.email,
+    if (form.email) {
+      order = await orderModel.findOne({
+        email: form.email,
         paymentStatus: "payment_pending",
       });
-
-      if (order) {
-        order.paymentId = session.id;
-        order.totalAmount = items.reduce((total, item) => total + item.productId.price * item.quantity * exchangeRate[currency], 0);
-        await order.save();
-      }
     } else {
-      let order = await orderModel.findOne({
+      order = await orderModel.findOne({
         userId: items.userId,
         paymentStatus: "payment_pending",
       });
-
-      if (order) {
-        order.paymentId = session.id;
-        order.totalAmount = items.reduce((total, item) => total + item.productId.price * item.quantity * exchangeRate[currency], 0);
-        await order.save();
-      }
     }
-
-    res.status(200).json(session);
+    if (order) {
+      const session = await createStripeSession(items, currency);
+      await updateOrderPaymentInfo(order, session, items, currency);
+      res.status(200).json(session);
+    } else {
+      res.status(400).json({ error: "Order not found or payment already processed" });
+    }
   } catch (error) {
     next(error);
   }
 };
-
 const paymentStatus = async (req, res) => {
   try {
     const c_id = req.body.id;
@@ -100,27 +106,25 @@ const paymentStatus = async (req, res) => {
           );
         });
       } else {
-        // Send email with tracking ID
         await mailTrackId(order.userId.email, order);
       }
 
-      // Update order payment status
       order.paymentStatus = paymentIntent;
       await order.save();
 
-      // Respond with success
       return res.status(200).json({ paymentIntent: paymentIntent, orderId: order._id });
     } else {
-      // Handle the case where no order is found
       return res.status(404).json({ error: 'Order not found' });
     }
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 module.exports = {
+  createStripeSession,
+  getExchangeRate,
+  updateOrderPaymentInfo,
   paymentStatus,
   payment,
 };

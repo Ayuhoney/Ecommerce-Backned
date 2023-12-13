@@ -51,3 +51,157 @@ describe('createOrder function', () => {
     await createOrder(mockRequest, mockResponse);
   });
 });
+
+  it('should handle errors during order placement', async () => {
+    const req = {
+      body: {
+        order: {
+          userId: null,
+          items: [{ productId: 'product1', quantity: 2 }],
+          totalItems: 2,
+          totalPrice: 50,
+        },
+        form: {
+          bname: 'John Doe',
+          email: 'john@example.com',
+          password: 'securepassword',
+          name: 'John Doe',
+          phone: '1234567890',
+          house: '123 Street',
+          city: 'City',
+          state: 'State',
+          pincode: '12345',
+        },
+      },
+    };
+  
+    const res = {
+      status: jest.fn(() => res),
+      send: jest.fn(),
+    };
+  
+    userModel.findOne.mockRejectedValue(new Error('User lookup error'));
+  
+    try {
+      await createOrder(req, res);
+  
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith({ error: 'User lookup error' });
+    } catch (error) {
+      throw error;
+    }
+  });
+  
+
+  it('should handle errors', async () => {
+    const req = {
+      body: {
+        order: {
+          userId: 'user123',
+          items: [{ productId: 'product1', quantity: 2 }],
+          totalItems: 2,
+          totalPrice: 50,
+        },
+        form: {
+          bname: 'John Doe',
+          email: 'john@example.com',
+          password: 'securepassword',
+          name: 'John Doe',
+          phone: '1234567890',
+          house: '123 Street',
+          city: 'City',
+          state: 'State',
+          pincode: '12345',
+        },
+      },
+    };
+
+    const res = {
+      status: jest.fn(() => res),
+      send: jest.fn(),
+    };
+
+    userModel.findOne.mockRejectedValue(new Error('User lookup error'));
+
+    await createOrder(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith({ error: 'User lookup error' });
+
+  });  it('should handle errors during order placement', async () => {
+    const req = {
+      body: {
+        order: {
+          userId: null,
+          items: [{ productId: 'product1', quantity: 2 }],
+          totalItems: 2,
+          totalPrice: 50,
+        },
+        form: {
+          bname: 'John Doe',
+          email: 'john@example.com',
+          password: 'securepassword',
+          name: 'John Doe',
+          phone: '1234567890',
+          house: '123 Street',
+          city: 'City',
+          state: 'State',
+          pincode: '12345',
+        },
+      },
+    };
+  
+    const res = {
+      status: jest.fn(() => res),
+      send: jest.fn(),
+    };
+  
+    userModel.findOne.mockRejectedValue(new Error('User lookup error'));
+  
+    try {
+      await createOrder(req, res);
+  
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith({ error: 'User lookup error' });
+    } catch (error) {
+      throw error;
+    }
+  });
+  
+
+  it('should handle errors', async () => {
+    const req = {
+      body: {
+        order: {
+          userId: 'user123',
+          items: [{ productId: 'product1', quantity: 2 }],
+          totalItems: 2,
+          totalPrice: 50,
+        },
+        form: {
+          bname: 'John Doe',
+          email: 'john@example.com',
+          password: 'securepassword',
+          name: 'John Doe',
+          phone: '1234567890',
+          house: '123 Street',
+          city: 'City',
+          state: 'State',
+          pincode: '12345',
+        },
+      },
+    };
+
+    const res = {
+      status: jest.fn(() => res),
+      send: jest.fn(),
+    };
+
+    userModel.findOne.mockRejectedValue(new Error('User lookup error'));
+
+    await createOrder(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith({ error: 'User lookup error' });
+
+  });

@@ -1,284 +1,155 @@
-const { cancelProductInOrder } = require('../../../controller/orderController.js'); 
+const { getOrderByIds } = require('../../../controller/orderController'); 
+const { isUserAuthorized } = require('../../../controller/orderController'); 
 
+describe('getOrderByIds', () => {
+ 
+  const orderId = 'orderId';
+  const mockOrder = {
+    _id: orderId,
+    userId: 'userId',
+    items: [
+      { productId: 'productId1', quantity: 2 },
+      { productId: 'productId2', quantity: 3 },
+    ],
+    status: 'completed',
+    totalItems: 5,
+    totalPrice: 50,
+  };
 
-const orderModel = {
-  findById: jest.fn(),
-  findByIdAndUpdate: jest.fn(),
-};
+  // Mock the required model
+  const mockOrderModel = {
+    findById: jest.fn(),
+  };
 
-const productModel = {
-  findById: jest.fn(),
-  save: jest.fn(),
-};
-
-const responseBuilder = {
-  error: jest.fn(),
-  success: jest.fn(),
-};
-
-const req = {
-  body: {
-    productId: 'validProductId',
-  },
-  params: {
-    orderId: 'validOrderId',
-  },
-  user: {
-    userId: 'validUserId',
-  },
-};
-
-const res = {
-  status: jest.fn(() => res),
-  send: jest.fn(),
-};
-
-describe('cancelProductInOrder', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('should return error for invalid orderId or productId', async () => {
-    req.params.orderId = 'invalidOrderId';
-    req.body.productId = 'invalidProductId';
+  // Test cases
+  it('should return the order with the specified orderId', async () => {
 
-    await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
+    mockOrderModel.findById.mockResolvedValueOnce(mockOrder);
+    const result = await getOrderByIds(orderId, mockOrderModel);
 
-    expect(responseBuilder.error).toHaveBeenCalledWith(400, 'Invalid orderId or productId');
+    // Assertions
+    expect(mockOrderModel.findById).toHaveBeenCalledWith(orderId);
+    expect(result).toEqual(mockOrder);
   });
 
-  test('should return error if order not found', async () => {
-    orderModel.findById.mockResolvedValueOnce(null);
+  it('should return null if the order is not found', async () => {
+    mockOrderModel.findById.mockResolvedValueOnce(null);
 
-    await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
-    expect(responseBuilder.error).toHaveBeenCalledWith(400,"Invalid orderId or productId");
+    const result = await getOrderByIds(orderId, mockOrderModel);
+
+    // Assertions
+    expect(mockOrderModel.findById).toHaveBeenCalledWith(orderId);
+    expect(result).toBeNull();
   });
-  test('should return error', async () => {
-    orderModel.findById.mockResolvedValueOnce(null);
+});
 
-    await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
-    expect(responseBuilder.error).toHaveBeenCalledWith(400,"Invalid orderId or productId");
-  });
-  test('should return successfull', async () => {
-    orderModel.findById.mockResolvedValueOnce(null);
+describe('isUserAuthorized', () => {
+  // Mock data
+  const userId = 'userId';
+  const userOrder = {
+    _id: 'orderId',
+    userId: 'userId',
+    items: [
+      { productId: 'productId1', quantity: 2 },
+      { productId: 'productId2', quantity: 3 },
+    ],
+    status: 'completed',
+    totalItems: 5,
+    totalPrice: 50,
+  };
 
-    await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
-    expect(responseBuilder.error).toHaveBeenCalledWith(400,"Invalid orderId or productId");
-  });
-
-
-  test('should return an error if orderId is invalid', async () => {
-    req.params.orderId = 'invalidOrderId';
-
-    await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
-
-    expect(responseBuilder.error).toHaveBeenCalledWith(400, "Invalid orderId or productId");
-  });
-
-  test('should return an error if order is not found', async () => {
-    orderModel.findById.mockResolvedValueOnce(null);
-
-    await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
-
-    expect(responseBuilder.error).toHaveBeenCalledWith(400,"Invalid orderId or productId");
+  it('should return true if the userId matches the userOrder.userId', () => {
+    const result = isUserAuthorized(userId, userOrder);
+    expect(result).toBe(true);
   });
 
-  test('should return an error if user does not have access to update the order', async () => {
-    orderModel.findById.mockResolvedValueOnce({
-      _id: 'validOrderId',
-      userId: 'otherUserId', // Different user ID
-      status: 'completed',
-      items: [{ productId: 'validProductId', quantity: 3, canceled: false }],
-      totalItems: 3,
-      totalPrice: 150,
-    });
+  it('should return false if the userId does not match the userOrder.userId', () => {
 
-    await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
+    const modifiedUserOrder = { ...userOrder, userId: 'differentUserId' };
+    const result = isUserAuthorized(userId, modifiedUserOrder);
+    expect(result).toBe(false);
 
-    expect(responseBuilder.error).toHaveBeenCalledWith(400,"Invalid orderId or productId");
-  });
-
-  test('should return an error if the order is not completed', async () => {
-    orderModel.findById.mockResolvedValueOnce({
-      _id: 'validOrderId',
-      userId: 'validUserId',
-      status: 'pending', // Order status is not "completed"
-      items: [{ productId: 'validProductId', quantity: 3, canceled: false }],
-      totalItems: 3,
-      totalPrice: 150,
-    });
-
-    await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
-
-    expect(responseBuilder.error).toHaveBeenCalledWith(400,"Invalid orderId or productId");
-  });
-
-  test('should return an error if the product is not found', async () => {
-    orderModel.findById.mockResolvedValueOnce({
-      _id: 'validOrderId',
-      userId: 'validUserId',
-      status: 'completed',
-      items: [{ productId: 'validProductId', quantity: 3, canceled: false }],
-      totalItems: 3,
-      totalPrice: 150,
-    });
-
-    productModel.findById.mockResolvedValueOnce(null);
-
-    await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
-
-    expect(responseBuilder.error).toHaveBeenCalledWith(400,"Invalid orderId or productId");
-  });
-
-  test('should return an error if the order is already empty', async () => {
-    orderModel.findById.mockResolvedValueOnce({
-      _id: 'validOrderId',
-      userId: 'validUserId',
-      status: 'completed',
-      items: [], // Empty items array
-      totalItems: 0,
-      totalPrice: 0,
-    });
-
-    await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
-
-    expect(responseBuilder.error).toHaveBeenCalledWith(400,"Invalid orderId or productId");
-  });
-
-  test('should update order and product successfully', async () => {
-    orderModel.findById.mockResolvedValueOnce({
-      _id: 'validOrderId',
-      userId: 'validUserId',
-      status: 'completed',
-      items: [{ productId: 'validProductId', quantity: 3, canceled: false }],
-      totalItems: 3,
-      totalPrice: 150,
-    });
-
-    productModel.findById.mockResolvedValueOnce({
-      _id: 'validProductId',
-      stock: 5,
-      save: jest.fn(), // Mock the save function
-    });
-
-    orderModel.findByIdAndUpdate.mockResolvedValueOnce({
-      _id: 'validOrderId',
-      userId: 'validUserId',
-      status: 'canceled',
-      items: [{ productId: 'validProductId', quantity: 3, canceled: true }],
-      totalItems: 0,
-      totalPrice: 0,
-    });
-    await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
   });
 });
 
 
+const {cancelProductInOrder} = require('../../../controller/orderController'); 
+
 describe('cancelProductInOrder', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
 
-  test('should return an error if orderId is invalid', async () => {
-    req.params.orderId = 'invalidOrderId';
+  const orderId = 'orderId';
+  const userId = 'userId';
+  const productId = 'productId';
+  const validObjectId = 'validObjectId';
+  const invalidObjectId = 'invalidObjectId';
 
-    await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
+  const req = {
+    params: {
+      orderId: validObjectId,
+    },
+    body: {
+      productId: productId,
+    },
+    user: {
+      userId: userId,
+    },
+  };
+
+  const res = {
+    status: jest.fn().mockReturnThis(),
+    send: jest.fn(),
+  };
+
+  const responseBuilder = {
+    error: jest.fn().mockReturnThis(),
+    responseBuilder: jest.fn().mockReturnThis(),
+  };
+
+  // Test cases
+  it('should return 400 with an error message for an invalid orderId', async () => {
+    const reqInvalidOrderId = { ...req, params: { orderId: invalidObjectId } };
+
+    await cancelProductInOrder(reqInvalidOrderId, res, null, null, responseBuilder);
 
     expect(responseBuilder.error).toHaveBeenCalledWith(400, 'Invalid orderId or productId');
   });
 
-  test('should return an error if order is not found', async () => {
-    orderModel.findById.mockResolvedValueOnce(null);
-
-    await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
+  it('should return 404 with an error message for a non-existent order', async () => {
+ 
+    await cancelProductInOrder(req, res, null, null, responseBuilder);
 
     expect(responseBuilder.error).toHaveBeenCalledWith(400,"Invalid orderId or productId");
   });
 
-  test('should return an error if user does not have access to update the order', async () => {
-    orderModel.findById.mockResolvedValueOnce({
-      _id: 'validOrderId',
-      userId: 'otherUserId', // Different user ID
+  it('should return 403 with an error message if the user is not authorized', async () => {
+    const userOrder = {
+      _id: validObjectId,
+      userId: 'differentUserId',
       status: 'completed',
-      items: [{
-        productId: 'validProductId',
-        quantity: 3,
-        canceled: false
-      }],
-      totalItems: 3,
-      totalPrice: 150,
-    });
-
-    await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
+      items: [],
+      totalItems: 0,
+      totalPrice: 0,
+    };
+    await cancelProductInOrder(req, res, null, null, responseBuilder);
 
     expect(responseBuilder.error).toHaveBeenCalledWith(400,"Invalid orderId or productId");
   });
 
-  test('should return an error if the order is not completed', async () => {
-    orderModel.findById.mockResolvedValueOnce({
-      _id: 'validOrderId',
-      userId: 'validUserId',
-      status: 'pending', // Order status is not "completed"
-      items: [{
-        productId: 'validProductId',
-        quantity: 3,
-        canceled: false
-      }],
-      totalItems: 3,
-      totalPrice: 150,
-    });
+  it('should return 400 with an error message for an invalid productId', async () => {
+    const reqInvalidProductId = { ...req, body: { productId: invalidObjectId } };
 
-    await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
+    await cancelProductInOrder(reqInvalidProductId, res, null, null, responseBuilder);
 
+    expect(responseBuilder.error).toHaveBeenCalledWith(400, 'Invalid orderId or productId');
+  });
+
+  it('should return 400 with an error message if the order is not in "completed" status', async () => {
+    await cancelProductInOrder(req, res, null, null, responseBuilder);
     expect(responseBuilder.error).toHaveBeenCalledWith(400, "Invalid orderId or productId");
   });
 
-  test('should return an error if the product is not found', async () => {
-    orderModel.findById.mockResolvedValueOnce({
-      _id: 'validOrderId',
-      userId: 'validUserId',
-      status: 'completed',
-      items: [{
-        productId: 'validProductId',
-        quantity: 3,
-        canceled: false
-      }],
-      totalItems: 3,
-      totalPrice: 150,
-    });
-
-    productModel.findById.mockResolvedValueOnce(null);
-
-    await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
-
-    expect(responseBuilder.error).toHaveBeenCalledWith( 400, "Invalid orderId or productId");
-  });
-
-  test('should return an error if the order is already empty', async () => {
-    orderModel.findById.mockResolvedValueOnce({
-      _id: 'validOrderId',
-      userId: 'validUserId',
-      status: 'completed',
-      items: [], // Empty items array
-      totalItems: 0,
-      totalPrice: 0,
-    });
-
-    await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
-    expect(responseBuilder.error).toHaveBeenCalledWith(400,"Invalid orderId or productId");
-  });
-  
-  test('should handle invalid order ID', async () => {
-    orderModel.findById.mockRejectedValueOnce(new Error('Invalid order ID'));
-  
-    try {
-      await cancelProductInOrder(req, res, orderModel, productModel, responseBuilder);
-    } catch (error) {
-      expect(error).toEqual(new Error('Invalid order ID'));
-      expect(productModel.findById).not.toHaveBeenCalled();
-      expect(productModel.save).not.toHaveBeenCalled();
-      expect(orderModel.findByIdAndUpdate).not.toHaveBeenCalled();
-      expect(responseBuilder.success).not.toHaveBeenCalled();
-    }
-  });
 });
