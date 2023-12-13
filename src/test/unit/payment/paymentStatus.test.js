@@ -1,8 +1,6 @@
 const { paymentStatus } = require('../../../controller/stripeController');
-const stripe = require('stripe'); 
 const orderModel = require('../../../model/orderModel'); 
-const productModel = require('../../../model/productModel'); 
-const { mailTrackId } = require('../../../validators/sendOrderSummaryMail'); 
+
 
 jest.mock('stripe');
 jest.mock('../../../model/orderModel');
@@ -28,7 +26,6 @@ describe('paymentStatus function', () => {
 
     orderModel.findOne.mockResolvedValue(null);
 
-    // Act
     await paymentStatus(req, res);
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: "Internal server error"});

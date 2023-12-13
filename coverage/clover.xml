@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1702461860686" clover="3.2.0">
-  <project timestamp="1702461860686" name="All files">
-    <metrics statements="600" coveredstatements="389" conditionals="196" coveredconditionals="91" methods="70" coveredmethods="54" elements="866" coveredelements="534" complexity="0" loc="600" ncloc="600" packages="4" files="16" classes="16"/>
+<coverage generated="1702468357810" clover="3.2.0">
+  <project timestamp="1702468357811" name="All files">
+    <metrics statements="599" coveredstatements="396" conditionals="196" coveredconditionals="92" methods="70" coveredmethods="56" elements="865" coveredelements="544" complexity="0" loc="599" ncloc="599" packages="4" files="16" classes="16"/>
     <package name="controller">
       <metrics statements="528" coveredstatements="329" conditionals="176" coveredconditionals="75" methods="61" coveredmethods="48"/>
       <file name="cartController.js" path="/home/ri-dev/Desktop/Ecommerce-Backned/src/controller/cartController.js">
@@ -606,7 +606,7 @@
       </file>
     </package>
     <package name="validators">
-      <metrics statements="42" coveredstatements="30" conditionals="18" coveredconditionals="14" methods="8" coveredmethods="5"/>
+      <metrics statements="41" coveredstatements="37" conditionals="18" coveredconditionals="15" methods="8" coveredmethods="7"/>
       <file name="schemaValidation.js" path="/home/ri-dev/Desktop/Ecommerce-Backned/src/validators/schemaValidation.js">
         <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="13" type="stmt"/>
@@ -631,18 +631,17 @@
         <line num="43" count="9" type="stmt"/>
       </file>
       <file name="sendOrderSummaryMail.js" path="/home/ri-dev/Desktop/Ecommerce-Backned/src/validators/sendOrderSummaryMail.js">
-        <metrics statements="11" coveredstatements="3" conditionals="2" coveredconditionals="0" methods="2" coveredmethods="0"/>
-        <line num="2" count="2" type="stmt"/>
+        <metrics statements="10" coveredstatements="10" conditionals="2" coveredconditionals="1" methods="2" coveredmethods="2"/>
+        <line num="1" count="3" type="stmt"/>
+        <line num="3" count="3" type="stmt"/>
         <line num="4" count="2" type="stmt"/>
-        <line num="6" count="0" type="stmt"/>
-        <line num="7" count="0" type="stmt"/>
-        <line num="17" count="0" type="stmt"/>
-        <line num="67" count="0" type="stmt"/>
-        <line num="95" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="97" count="0" type="stmt"/>
-        <line num="100" count="0" type="stmt"/>
-        <line num="101" count="0" type="stmt"/>
-        <line num="107" count="2" type="stmt"/>
+        <line num="5" count="2" type="stmt"/>
+        <line num="14" count="2" type="stmt"/>
+        <line num="62" count="4" type="stmt"/>
+        <line num="89" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="90" count="1" type="stmt"/>
+        <line num="93" count="1" type="stmt"/>
+        <line num="96" count="3" type="stmt"/>
       </file>
       <file name="validator.js" path="/home/ri-dev/Desktop/Ecommerce-Backned/src/validators/validator.js">
         <metrics statements="14" coveredstatements="14" conditionals="14" coveredconditionals="14" methods="4" coveredmethods="4"/>
